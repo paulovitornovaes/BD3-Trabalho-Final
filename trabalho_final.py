@@ -3,7 +3,7 @@ import subprocess
 import pyspark
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import lit
+from pyspark.sql.functions import lit, col, date_format, month
 
 def upload_to_hdfs(local_dir, hdfs_dir):
     """
@@ -41,6 +41,24 @@ def load_parquets(spark):
 
     return dataFrame
 
+def filtrar_periodo(dataframe):
+
+    inicio_periodo = "2022-01-01"
+    fim_periodo = "2022-12-31"
+    
+    dataframe_filtrado = dataframe.filter(
+        col('tpep_pickup_datetime').cast('date').between(inicio_periodo, fim_periodo)
+    )
+    
+    return dataframe_filtrado
+
+def etl_data(dataframe):
+
+    dataframe = (dataframe
+    .withColumn('date', date_format('tpep_pickup_datetime', 'MMMM'))
+    .withColumn('month', month('tpep_pickup_datetime')))
+    
+    return dataframe
 
 def main(local_dir, hdfs_dir):
     
@@ -52,10 +70,17 @@ def main(local_dir, hdfs_dir):
 
     dataFrame.createOrReplaceTempView("CorridaTaxi")
 
-   
-    temp = spark.sql('SELECT * FROM CorridaTaxi')
+    #Filtrar para o ano de 2022
+    dataFrame = filtrar_periodo(dataFrame)
+    
+    dataFrame = etl_data(dataFrame)
 
-    temp.show()
+
+    dataframeSelect = dataFrame.select("tpep_pickup_datetime", "VendorID", "date", "month", "DOLocationID")
+   
+    dataframeSelect.show()
+
+   
 
 
 if __name__ == "__main__":
