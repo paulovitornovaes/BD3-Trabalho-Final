@@ -42,12 +42,11 @@ def load_parquets(spark):
     return dataFrame
 
 def filtrar_periodo(dataframe):
-
     inicio_periodo = "2022-01-01"
     fim_periodo = "2022-12-31"
     
     dataframe_filtrado = dataframe.filter(
-        col('tpep_pickup_datetime').cast('date').between(inicio_periodo, fim_periodo)
+        col('tpep_dropoff_datetime').cast('date').between(inicio_periodo, fim_periodo)
     )
     
     return dataframe_filtrado
