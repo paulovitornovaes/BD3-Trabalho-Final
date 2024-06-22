@@ -43,8 +43,10 @@ def load_parquets(spark):
 
 def remove_unused_col(dataframe):
     return dataframe.drop('RateCodeID', 'Store_and_fwd_flag', 'Payment_type', 'Fare_amount' \
-                          'Extra', 'MTA_tax', 'Improvement_surcharge', 'Tip_amount' \
-                            'Tolls_amount', 'Total_amount', 'Congestion_Surcharge', 'Airport_fee')
+                            'Extra', 'MTA_tax', 'Improvement_surcharge', 'Tip_amount' \
+                            'Tolls_amount', 'Total_amount', 'Congestion_Surcharge', 'airport_fee' \
+                            'Passenger_count', 'Trip_distance', 'Fare_amount',  \
+                            'tolls_amount')
 
 def filtrar_periodo(dataframe):
     inicio_periodo = "2022-01-01"
@@ -75,12 +77,12 @@ def main(local_dir, hdfs_dir):
     dataFrame = remove_unused_col(dataFrame)
 
     dataFrame.createOrReplaceTempView("CorridaTaxi")
-
+    
     #Filtrar para o ano de 2022
     dataFrame = filtrar_periodo(dataFrame)
     
     dataFrame = etl_data(dataFrame)
-
+    dataFrame.show()
 
     dataframeSelect = dataFrame.select("tpep_pickup_datetime","tpep_dropoff_datetime", "VendorID", "date", "month", "DOLocationID")
     
