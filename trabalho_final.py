@@ -5,17 +5,24 @@ from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import lit, col, date_format, month, row_number, count
 from pyspark.sql.window import Window
+
 def upload_to_hdfs(local_dir, hdfs_dir):
     """
     Função para fazer upload dos arquivos Parquet para o HDFS.
     """
     # Comando para copiar arquivos para o HDFS
-    command = f"hdfs dfs -put {local_dir}/*.parquet {hdfs_dir}"
+    command = f"hdfs dfs -put {local_dir}/parquets/*.parquet {hdfs_dir}"
     try:
         subprocess.run(command, shell=True, check=True)
         print(f"Arquivos carregados com sucesso para {hdfs_dir}")
     except subprocess.CalledProcessError as e:
         print(f"Erro ao carregar arquivos para o HDFS: {e}")
+    command =  f"hdfs dfs -put {local_dir}/taxi_zone_lookup.csv {hdfs_dir}"
+    try:
+        subprocess.run(command, shell=True, check=True)
+        print(f"Arquivo carregado com sucesso para {hdfs_dir}")
+    except subprocess.CalledProcessError as e:
+        print(f"Erro ao carregar arquivo para o HDFS: {e}")
 
 def init_spark():
     SparkContext("local", "Trabalho Final")
@@ -48,6 +55,12 @@ def remove_unused_col(dataframe):
                             'Passenger_count', 'Trip_distance', 'Fare_amount',  \
                             'tolls_amount')
 
+def load_zones(spark, dataframe):
+    zones = spark.read.csv("/user/paulo/taxi_zone_lookup.csv", header=True, inferSchema=True)
+    zones = zones.withColumnRenamed('LocationID', 'DOLocationID')
+    dataframe_with_zones =  dataframe.join(zones, on='DOLocationID', how='inner')
+    dataframe_with_zones.show()
+
 def filtrar_periodo(dataframe):
     inicio_periodo = "2022-01-01"
     fim_periodo = "2022-12-31"
@@ -75,6 +88,8 @@ def main(local_dir, hdfs_dir):
     dataFrame = load_parquets(spark)
 
     dataFrame = remove_unused_col(dataFrame)
+    
+    dataFrame = load_zones(spark, dataFrame)
 
     dataFrame.createOrReplaceTempView("CorridaTaxi")
     
@@ -93,7 +108,7 @@ def main(local_dir, hdfs_dir):
 
 if __name__ == "__main__":
     
-    local_dir = "/home/paulo/Documentos/BancoDeDados/trabalho-final/parquets"
+    local_dir = "/home/paulo/Documentos/BancoDeDados/trabalho-final"
     
     hdfs_dir = "/user/paulo"
     
