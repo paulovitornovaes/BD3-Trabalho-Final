@@ -90,7 +90,23 @@ def etl_data(dataframe):
     return dataframe
 
 def top_locations(dataframe):
-    result = dataframe.groupBy('month', 'VendorID', 'Zone', 'date').agg(count('*').alias('quantity'))
+    result = dataframe.groupBy('month', 'VendorID', 'Zone', 'date').agg(count('*').alias('qtd'))
+
+    window_spec = Window.partitionBy('month', 'VendorID').orderBy(col('qtd').desc())
+    
+    result = result.withColumn('rank', row_number().over(window_spec))
+    
+    result = result.drop('qtd')
+    
+    result = result.filter(col('rank') <= 5)
+    
+    result = result.orderBy(col('VendorID').asc(), col('month').asc(), col('rank').asc())
+
+    result = result.drop('month')
+
+    result = result.select('VendorID', 'date', 'Zone', 'rank')
+
+    print(result.count())
     result.show()
 
 
@@ -103,12 +119,11 @@ def main(local_dir, hdfs_dir):
     dataFrame = load_parquets(spark)
 
     dataFrame = remove_unused_col(dataFrame)
-    dataFrame.show()
     
     dataFrame = load_zones(spark, dataFrame)
 
     dataframe_adjacencies = load_zones_adjacencies(spark)
-    dataframe_adjacencies.show()
+
     dataFrame.createOrReplaceTempView("CorridaTaxi")
     
     #Filtrar para o ano de 2022
@@ -120,9 +135,6 @@ def main(local_dir, hdfs_dir):
 
     dataframeSelect = dataFrame.select("tpep_pickup_datetime","tpep_dropoff_datetime", "VendorID", "date", "month", "DOLocationID")
     
-    dataframeSelect.show()
-
-   
 
 
 if __name__ == "__main__":
