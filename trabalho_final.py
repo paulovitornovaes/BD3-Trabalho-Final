@@ -60,15 +60,15 @@ def load_zones(spark, dataframe):
     dataframe_with_zones =  dataframe.join(zones, on='DOLocationID', how='inner')
     return dataframe_with_zones
 
-def load_zones_adjacencies(spark, dataframe):
+def load_zones_adjacencies(spark):
     grafo_path = '/user/paulo/grafo.txt'
     
 
-    grafo_df = spark.read.text(grafo_path) \
+    dataframe = spark.read.text(grafo_path) \
                     .withColumn("value", split("value", " ")) \
                     .selectExpr("value[0] as DOLocationID", "value[1] as AdjacencieID")
     
-    grafo_df.show()
+    return dataframe
 
 
 def filtrar_periodo(dataframe):
@@ -102,8 +102,8 @@ def main(local_dir, hdfs_dir):
     
     dataFrame = load_zones(spark, dataFrame)
 
-    load_zones_adjacencies(spark, dataFrame)
-
+    dataframe_adjacencies = load_zones_adjacencies(spark)
+    dataframe_adjacencies.show()
     dataFrame.createOrReplaceTempView("CorridaTaxi")
     
     #Filtrar para o ano de 2022
