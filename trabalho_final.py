@@ -3,7 +3,7 @@ import subprocess
 import pyspark
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import lit, col, date_format, month, row_number, count
+from pyspark.sql.functions import lit, col, date_format, month, row_number, count, split, explode
 from pyspark.sql.window import Window
 
 def upload_to_hdfs(local_dir, hdfs_dir):
@@ -60,6 +60,17 @@ def load_zones(spark, dataframe):
     dataframe_with_zones =  dataframe.join(zones, on='DOLocationID', how='inner')
     return dataframe_with_zones
 
+def load_zones_adjacencies(spark, dataframe):
+    grafo_path = '/user/paulo/grafo.txt'
+    
+
+    grafo_df = spark.read.text(grafo_path) \
+                    .withColumn("value", split("value", " ")) \
+                    .selectExpr("value[0] as DOLocationID", "value[1] as AdjacencieID")
+    
+    grafo_df.show()
+
+
 def filtrar_periodo(dataframe):
     inicio_periodo = "2022-01-01"
     fim_periodo = "2022-12-31"
@@ -90,6 +101,8 @@ def main(local_dir, hdfs_dir):
     dataFrame.show()
     
     dataFrame = load_zones(spark, dataFrame)
+
+    load_zones_adjacencies(spark, dataFrame)
 
     dataFrame.createOrReplaceTempView("CorridaTaxi")
     
