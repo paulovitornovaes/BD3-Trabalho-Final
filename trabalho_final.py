@@ -49,17 +49,16 @@ def load_parquets(spark):
     return dataFrame
 
 def remove_unused_col(dataframe):
-    return dataframe.drop('RateCodeID', 'Store_and_fwd_flag', 'Payment_type', 'Fare_amount' \
-                            'Extra', 'MTA_tax', 'Improvement_surcharge', 'Tip_amount' \
-                            'Tolls_amount', 'Total_amount', 'Congestion_Surcharge', 'airport_fee' \
-                            'Passenger_count', 'Trip_distance', 'Fare_amount',  \
-                            'tolls_amount')
+    return dataframe.drop( 'RatecodeID', 'Store_and_fwd_flag', 'Payment_type', 'Fare_amount',\
+                           'Extra', 'MTA_tax', 'Improvement_surcharge', 'Tip_amount', \
+                            'Total_amount', 'Congestion_Surcharge', 'airport_fee', \
+                            'Passenger_count', 'Trip_distance', 'tolls_amount')
 
 def load_zones(spark, dataframe):
     zones = spark.read.csv("/user/paulo/taxi_zone_lookup.csv", header=True, inferSchema=True)
     zones = zones.withColumnRenamed('LocationID', 'DOLocationID')
     dataframe_with_zones =  dataframe.join(zones, on='DOLocationID', how='inner')
-    dataframe_with_zones.show()
+    return dataframe_with_zones
 
 def filtrar_periodo(dataframe):
     inicio_periodo = "2022-01-01"
@@ -88,6 +87,7 @@ def main(local_dir, hdfs_dir):
     dataFrame = load_parquets(spark)
 
     dataFrame = remove_unused_col(dataFrame)
+    dataFrame.show()
     
     dataFrame = load_zones(spark, dataFrame)
 
