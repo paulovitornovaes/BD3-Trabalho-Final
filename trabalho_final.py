@@ -89,6 +89,11 @@ def etl_data(dataframe):
     
     return dataframe
 
+def top_locations(dataframe):
+    result = dataframe.groupBy('month', 'VendorID', 'Zone', 'date').agg(count('*').alias('quantity'))
+    result.show()
+
+
 def main(local_dir, hdfs_dir):
     
     #upload_to_hdfs(local_dir, hdfs_dir)
@@ -110,7 +115,8 @@ def main(local_dir, hdfs_dir):
     dataFrame = filtrar_periodo(dataFrame)
     
     dataFrame = etl_data(dataFrame)
-    dataFrame.show()
+    
+    top_locations(dataFrame)
 
     dataframeSelect = dataFrame.select("tpep_pickup_datetime","tpep_dropoff_datetime", "VendorID", "date", "month", "DOLocationID")
     
