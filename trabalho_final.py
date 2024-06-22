@@ -3,8 +3,8 @@ import subprocess
 import pyspark
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import lit, col, date_format, month
-
+from pyspark.sql.functions import lit, col, date_format, month, row_number, count
+from pyspark.sql.window import Window
 def upload_to_hdfs(local_dir, hdfs_dir):
     """
     Função para fazer upload dos arquivos Parquet para o HDFS.
@@ -41,6 +41,11 @@ def load_parquets(spark):
 
     return dataFrame
 
+def remove_unused_col(dataframe):
+    return dataframe.drop('RateCodeID', 'Store_and_fwd_flag', 'Payment_type', 'Fare_amount' \
+                          'Extra', 'MTA_tax', 'Improvement_surcharge', 'Tip_amount' \
+                            'Tolls_amount', 'Total_amount', 'Congestion_Surcharge', 'Airport_fee')
+
 def filtrar_periodo(dataframe):
     inicio_periodo = "2022-01-01"
     fim_periodo = "2022-12-31"
@@ -67,6 +72,8 @@ def main(local_dir, hdfs_dir):
 
     dataFrame = load_parquets(spark)
 
+    dataFrame = remove_unused_col(dataFrame)
+
     dataFrame.createOrReplaceTempView("CorridaTaxi")
 
     #Filtrar para o ano de 2022
@@ -75,8 +82,8 @@ def main(local_dir, hdfs_dir):
     dataFrame = etl_data(dataFrame)
 
 
-    dataframeSelect = dataFrame.select("tpep_pickup_datetime", "VendorID", "date", "month", "DOLocationID")
-   
+    dataframeSelect = dataFrame.select("tpep_pickup_datetime","tpep_dropoff_datetime", "VendorID", "date", "month", "DOLocationID")
+    
     dataframeSelect.show()
 
    
