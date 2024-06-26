@@ -2,13 +2,14 @@ Realize uma Análise dos Dados com o Apache Spark e escolha uma
 dos dois itens abaixo para responder:
 
 ITEM 01)
-Quais os top-5 destinos (regiões) por taxistas por mês durante o
-ano de 2022? Acumule todos os top-5 destinos e mostre a
-distribuição (número de taxistas) que os frequentaram em cada
-mês do ano de 2022. Mostre a quantidade de corridas para os
-top-5 destinos e suas adjacências imediatas (regiões que fazem
+    Quais os top-5 destinos (regiões) por taxistas por mês durante o
+ano de 2022? -- validar --
+
+    Acumule todos os top-5 destinos e mostre a distribuição 
+(número de taxistas) que os frequentaram em cada
+mês do ano de 2022.
+
+    Mostre a quantidade de corridas para os top-5 destinos
+e suas adjacências imediatas (regiões que fazem
 fronteira) por mês para o ano de 2022.
 
-destino(regiao)
-mes (data)
-adjacencias

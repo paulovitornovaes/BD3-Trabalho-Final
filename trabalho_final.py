@@ -36,17 +36,17 @@ def load_parquets(spark):
 
         file_path = f"{hdfs_dir}/yellow_tripdata_2022-{month:02d}.parquet"
         
-        dataFrame = spark.read.parquet(file_path)
+        dataframe = spark.read.parquet(file_path)
         
-        dataFrame = dataFrame.withColumn("date_id", lit(month))
+        dataframe = dataframe.withColumn("date_id", lit(month))
         
-        dataFramesPorMes.append(dataFrame)
+        dataFramesPorMes.append(dataframe)
 
-    dataFrame = dataFramesPorMes[0]
+    dataframe = dataFramesPorMes[0]
     for df in dataFramesPorMes[1:]:
-        dataFrame = dataFrame.union(df)
+        dataframe = dataframe.union(df)
 
-    return dataFrame
+    return dataframe
 
 def remove_unused_col(dataframe):
     return dataframe.drop( 'RatecodeID', 'Store_and_fwd_flag', 'Payment_type', 'Fare_amount',\
@@ -70,7 +70,6 @@ def load_zones_adjacencies(spark):
     
     return dataframe
 
-
 def filtrar_periodo(dataframe):
     inicio_periodo = "2022-01-01"
     fim_periodo = "2022-12-31"
@@ -81,7 +80,7 @@ def filtrar_periodo(dataframe):
     
     return dataframe_filtrado
 
-def etl_data(dataframe):
+def etl_date(dataframe):
 
     dataframe = (dataframe
     .withColumn('date', date_format('tpep_pickup_datetime', 'MMMM'))
@@ -116,24 +115,24 @@ def main(local_dir, hdfs_dir):
     
     spark = init_spark()
 
-    dataFrame = load_parquets(spark)
+    dataframe = load_parquets(spark)
 
-    dataFrame = remove_unused_col(dataFrame)
+    dataframe = remove_unused_col(dataframe)
     
-    dataFrame = load_zones(spark, dataFrame)
+    dataframe = load_zones(spark, dataframe)
 
     dataframe_adjacencies = load_zones_adjacencies(spark)
 
-    dataFrame.createOrReplaceTempView("CorridaTaxi")
+    dataframe.createOrReplaceTempView("CorridaTaxi")
     
     #Filtrar para o ano de 2022
-    dataFrame = filtrar_periodo(dataFrame)
+    dataframe = filtrar_periodo(dataframe)
     
-    dataFrame = etl_data(dataFrame)
+    dataframe = etl_date(dataframe)
     
-    top_locations(dataFrame)
+    top_locations(dataframe)
 
-    dataframeSelect = dataFrame.select("tpep_pickup_datetime","tpep_dropoff_datetime", "VendorID", "date", "month", "DOLocationID")
+    dataframeSelect = dataframe.select("tpep_pickup_datetime","tpep_dropoff_datetime", "VendorID", "date", "month", "DOLocationID")
     
 
 
