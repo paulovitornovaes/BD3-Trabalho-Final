@@ -123,8 +123,6 @@ def main(local_dir, hdfs_dir):
 
     dataframe_adjacencies = load_zones_adjacencies(spark)
 
-    dataframe.createOrReplaceTempView("CorridaTaxi")
-    
     #Filtrar para o ano de 2022
     dataframe = filtrar_periodo(dataframe)
     
@@ -132,7 +130,7 @@ def main(local_dir, hdfs_dir):
     
     top_locations(dataframe)
 
-    dataframeSelect = dataframe.select("tpep_pickup_datetime","tpep_dropoff_datetime", "VendorID", "date", "month", "DOLocationID")
+    #dataframeSelect = dataframe.select("tpep_pickup_datetime","tpep_dropoff_datetime", "VendorID", "date", "month", "DOLocationID")
     
 
 
